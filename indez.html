@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Amigo Invisible Doble</title>
+  <style>
+    body { font-family: Arial, sans-serif; padding: 20px; background: #f4f4f9; }
+    h1 { text-align: center; }
+    .grid { display: grid; grid-template-columns: 1fr; gap: 10px; max-width: 400px; margin: 20px auto; }
+    input { padding: 10px; font-size: 16px; border: 1px solid #ccc; border-radius: 6px; }
+    button { display: block; margin: 20px auto; padding: 12px 24px; font-size: 16px; background: #4CAF50; color: white; border: none; border-radius: 6px; cursor: pointer; }
+    button:hover { background: #45a049; }
+    .hidden { display: none; }
+    .names-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; max-width: 400px; margin: 20px auto; }
+    .name-box { padding: 20px; text-align: center; font-size: 18px; font-weight: bold; color: white; border-radius: 10px; cursor: pointer; }
+    .msg { max-width: 400px; margin: 20px auto; padding: 15px; background: #fff; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.2); font-size: 16px; }
+  </style>
+</head>
+<body>
+  <h1>Amigo Invisible Doble</h1>
+
+  <!-- Pantalla 1 -->
+  <div id="screen1">
+    <div class="grid" id="nameInputs"></div>
+    <button id="okBtn">OK</button>
+  </div>
+
+  <!-- Pantalla 2 -->
+  <div id="screen2" class="hidden">
+    <div class="names-grid" id="namesGrid"></div>
+    <div id="messageBox" class="msg hidden"></div>
+  </div>
+
+  <script>
+    const colors = ["#e57373","#64b5f6","#81c784","#ffb74d","#ba68c8","#4db6ac"];
+
+    const screen1 = document.getElementById("screen1");
+    const screen2 = document.getElementById("screen2");
+    const nameInputs = document.getElementById("nameInputs");
+    const namesGrid = document.getElementById("namesGrid");
+    const messageBox = document.getElementById("messageBox");
+
+    // Crear 6 inputs
+    for (let i = 0; i < 6; i++) {
+      let input = document.createElement("input");
+      input.type = "text";
+      input.placeholder = "Nombre " + (i+1);
+      nameInputs.appendChild(input);
+    }
+
+    document.getElementById("okBtn").addEventListener("click", () => {
+      const inputs = document.querySelectorAll("#nameInputs input");
+      const participants = [];
+      inputs.forEach(inp => {
+        if (inp.value.trim()) participants.push(inp.value.trim());
+      });
+
+      if (participants.length !== 6) {
+        alert("Introduce exactamente 6 nombres");
+        return;
+      }
+
+      // Asignaciones circulares
+      const assignments = {};
+      for (let i = 0; i < 6; i++) {
+        let giver = participants[i];
+        let r1 = participants[(i+1)%6];
+        let r2 = participants[(i+2)%6];
+        assignments[giver] = [r1,r2];
+      }
+
+      // Mostrar pantalla 2
+      screen1.classList.add("hidden");
+      screen2.classList.remove("hidden");
+
+      // Crear cajas de colores
+      participants.forEach((name, idx) => {
+        let box = document.createElement("div");
+        box.className = "name-box";
+        box.style.background = colors[idx];
+        box.textContent = name;
+        box.addEventListener("click", () => {
+          let r1 = assignments[name][0];
+          let r2 = assignments[name][1];
+          let col1 = participants.find(p => assignments[p].includes(r1) && p !== name);
+          let col2 = participants.find(p => assignments[p].includes(r2) && p !== name);
+
+          messageBox.innerHTML = `
+            <b>${name}</b>:<br><br>
+            Le tienes que hacer un regalo a <b>${r1}</b> con <b>${col1}</b>.<br>
+            Y le tienes que hacer un regalo a <b>${r2}</b> con <b>${col2}</b>.
+          `;
+          messageBox.classList.remove("hidden");
+        });
+        namesGrid.appendChild(box);
+      });
+    });
+  </script>
+</body>
+</html>
